@@ -473,14 +473,19 @@ padding: 10px 20px;
 }
 
 
+.form_head{
+  color: #4318FF;
+}
+
 .menu button:hover {
 color: #4318FF;  /* Change text color on hover */
 background-color: rgba(255, 255, 255, 0.1);  /* Background color change on hover */
 }
 
-.powered-by {
-margin-top: auto; /* Pushes the "Powered by" text to the bottom */
+.powered_by {
+margin-top: 250px; /* Pushes the "Powered by" text to the bottom */
 text-align: center;
+/* padding: 10px; */
 }
 /* 
 .powered-by small {
