@@ -522,18 +522,88 @@ document.querySelector("#tableBody").addEventListener('click', function(event) {
       alert("Error occurred while deleting.");
     });
   }
+
+
+  // edit employee >>>>
+
+  
+   // Handle Edit
+   if (event.target && event.target.classList.contains("#edit")) {
+    const row = event.target.closest("tr");
+    const userId = row.querySelector("#useId").textContent; // Get the userId from data attribute
+    const name = row.querySelector(".name").textContent; // Assuming the employee name is in a cell with class="name"
+    const email = row.querySelector(".email").textContent; // Assuming email is in a cell with class="email"
+
+    // Populate the edit form (replace these with your actual form fields)
+    document.querySelector("#editForm #userId").value = userId;
+    document.querySelector("#editForm #name").value = name;
+    document.querySelector("#editForm #email").value = email;
+
+    // Show the form
+    document.querySelector("#editForm").style.display = "block";
+  }
 });
 
 
 
-// edit employee >>>>>
 
+
+
+
+// Handle form submission for editing employee
+document.querySelector("#edit").addEventListener('submit', function(event) {
+  event.preventDefault();
+
+  const userId = document.querySelector("#edit #userId").value;
+  const name = document.querySelector("#edit #name").value;
+  const email = document.querySelector("#edit #email").value;
+
+  fetch(`http://localhost:3000/employees/${userId}`, {
+    method: "PUT", // Use PUT or PATCH depending on your backend
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name: name,
+      email: email,
+    }),
+  })
+  .then(response => response.json())
+  .then(updatedEmployee => {
+    if (updatedEmployee) {
+      // Update the row in the table with the new values
+      const row = document.querySelector(`tr[data-user-id="${userId}"]`);
+      row.querySelector(".name").textContent = updatedEmployee.name;
+      row.querySelector(".email").textContent = updatedEmployee.email;
+      
+      // Hide the edit form
+      document.querySelector("#editForm").style.display = "none";
+    } else {
+      alert("Error updating employee");
+    }
+  })
+  .catch(error => {
+    console.error("Error updating employee:", error);
+    alert("Error occurred while updating.");
+  });
+});
+
+
+document.querySelector("#tableBody").addEventListener('click', function(event) {
+  if (event.target.id === "edit") {
+    const row = event.target.closest("tr");
+    const userId = row.querySelector("#userId").textContent; // Use correct identifier
+   console.log("hello");
+   
 
 function editEmployee(userId) {
-  const form = document.getElementById('add_employee'); // Ensure form is properly selected
+  const form = document.getElementById('add_employee'); 
+  // Ensure form is properly selected
+  
+  
   const saveChangeBtn = document.getElementById("savechange"); // Make sure saveChangeBtn exists
   const submitBtn = document.getElementById("submitBtn"); // Ensure submitBtn is defined
-  document.getElementById("form_head").innerHTML = "Edit Employee";
+  // document.getElementById("form_head").innerHTML = "Edit Employee";
   const modal = document.getElementById("modal"); 
   saveChangeBtn.style.display = "block";
   submitBtn.style.display = "none"; // Hide the submit button
@@ -563,8 +633,11 @@ function editEmployee(userId) {
       console.error('Error fetching employee data:', error);
     }
   }
-
   editData();
+}
+
+  
+  editEmployee();
 
   saveChangeBtn.addEventListener("click", function () {
     const isValid = validation();  // Assuming validation returns a boolean
@@ -604,83 +677,86 @@ function editEmployee(userId) {
     updateEmployee();
   });
 }
+});
+
+  
 
 
 
 
-// document.addEventListener("DOMContentLoaded", function() {
-  // Get pagination elements
-  const pagination = document.querySelector('.pagination');
-  const pageItems = pagination.querySelectorAll('.page-item');
-  const prevButton = pagination.querySelector('li.page-item:first-child');
-  const nextButton = pagination.querySelector('li.page-item:last-child');
-  const pageLinks = pagination.querySelectorAll('.page-link');
+// // document.addEventListener("DOMContentLoaded", function() {
+//   // Get pagination elements
+//   const pagination = document.querySelector('.pagination');
+//   const pageItems = pagination.querySelectorAll('.page-item');
+//   const prevButton = pagination.querySelector('li.page-item:first-child');
+//   const nextButton = pagination.querySelector('li.page-item:last-child');
+//   const pageLinks = pagination.querySelectorAll('.page-link');
   
-  let currentPage = 1;
-  const totalPages = pageItems.length - 2; // Adjust to exclude Prev and Next
+//   let currentPage = 1;
+//   const totalPages = pageItems.length - 2; // Adjust to exclude Prev and Next
   
-  // Set up event listeners for page clicks
-  pageLinks.forEach((link, index) => {
-    if (index === 0 || index === pageLinks.length - 1) return; // Skip Prev and Next
-    link.addEventListener('click', function(e) {
-      e.preventDefault(); // Prevent default anchor behavior
-      const pageNumber = parseInt(link.textContent);
-      if (pageNumber !== currentPage) {
-        currentPage = pageNumber;
-        updatePagination();
-      }
-    });
-  });
+//   // Set up event listeners for page clicks
+//   pageLinks.forEach((link, index) => {
+//     if (index === 0 || index === pageLinks.length - 1) return; // Skip Prev and Next
+//     link.addEventListener('click', function(e) {
+//       e.preventDefault(); // Prevent default anchor behavior
+//       const pageNumber = parseInt(link.textContent);
+//       if (pageNumber !== currentPage) {
+//         currentPage = pageNumber;
+//         updatePagination();
+//       }
+//     });
+//   });
   
-  // Handle Previous button click
-  prevButton.querySelector('.page-link').addEventListener('click', function(e) {
-    e.preventDefault();
-    if (currentPage > 1) {
-      currentPage--;
-      updatePagination();
-    }
-  });
+//   // Handle Previous button click
+//   prevButton.querySelector('.page-link').addEventListener('click', function(e) {
+//     e.preventDefault();
+//     if (currentPage > 1) {
+//       currentPage--;
+//       updatePagination();
+//     }
+//   });
   
-  // Handle Next button click
-  nextButton.querySelector('.page-link').addEventListener('click', function(e) {
-    e.preventDefault();
-    if (currentPage < totalPages) {
-      currentPage++;
-      updatePagination();
-    }
-  });
+//   // Handle Next button click
+//   nextButton.querySelector('.page-link').addEventListener('click', function(e) {
+//     e.preventDefault();
+//     if (currentPage < totalPages) {
+//       currentPage++;
+//       updatePagination();
+//     }
+//   });
   
-  // Function to update pagination (active page, disable Prev/Next)
-  function updatePagination() {
-    const pageItems = pagination.querySelectorAll('.page-item');  // Re-query in case it changes dynamically
+//   // Function to update pagination (active page, disable Prev/Next)
+//   function updatePagination() {
+//     const pageItems = pagination.querySelectorAll('.page-item');  // Re-query in case it changes dynamically
     
-    // Update active page
-    pageItems.forEach((item, index) => {
-      const pageLink = item.querySelector('.page-link');
-      const pageNumber = parseInt(pageLink.textContent);
+//     // Update active page
+//     pageItems.forEach((item, index) => {
+//       const pageLink = item.querySelector('.page-link');
+//       const pageNumber = parseInt(pageLink.textContent);
   
-      if (pageNumber === currentPage) {
-        item.classList.add('active');
-      } else {
-        item.classList.remove('active');
-      }
-    });
+//       if (pageNumber === currentPage) {
+//         item.classList.add('active');
+//       } else {
+//         item.classList.remove('active');
+//       }
+//     });
   
-    // Disable Previous button if on first page
-    if (currentPage === 1) {
-      prevButton.classList.add('disabled');
-    } else {
-      prevButton.classList.remove('disabled');
-    }
+//     // Disable Previous button if on first page
+//     if (currentPage === 1) {
+//       prevButton.classList.add('disabled');
+//     } else {
+//       prevButton.classList.remove('disabled');
+//     }
   
-    // Disable Next button if on the last page
-    if (currentPage === totalPages) {
-      nextButton.classList.add('disabled');
-    } else {
-      nextButton.classList.remove('disabled');
-    }
-  }
+//     // Disable Next button if on the last page
+//     if (currentPage === totalPages) {
+//       nextButton.classList.add('disabled');
+//     } else {
+//       nextButton.classList.remove('disabled');
+//     }
+//   }
   
-  // Initialize the pagination
-  updatePagination();
+//   // Initialize the pagination
+//   updatePagination();
   
