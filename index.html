@@ -80,7 +80,7 @@
           <form class="d-flex notification" role="search">
             <i class="bi bi-search"></i>
             <input class="form-control me-2 rounded-pill search" type="search" placeholder="Search" aria-label="Search"
-              name="as">
+              name="as" id="search">
           </form>
           <i class="bi bi-bell"></i>
           <img src="images/Elipse 5.png" alt="image" class="profile_pic">
@@ -90,17 +90,18 @@
       <div class="container-fluid employee_list  d-flex px-3 py-2 justify-content-between">
         <div class="emple_option d-flex">
           <h4>Employees List</h4>
-          <div class="entries">
-            <select name="" id="table_size">
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-            </select>
-          </div>
-          <h6>of 10</h6>
+          <!-- <div class="filterEntries"> -->
+           <div class="entries">
+                 <select name="" id="table_size">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select> 
+                <h6>of 10</h6>
+            </div>
+          
         </div>
         <button type="button" class="btn-btn-lg" id="add_emp">Add Employee</button>
 
@@ -147,28 +148,36 @@
 
 
 
-      <nav aria-label="Page navigation example">
-        <ul class="pagination">
-          <li class="page-item">
-            <a class="page-link" href="#" aria-label="Previous">
-              <span aria-hidden="true">&laquo;</span>
-            </a>
-          </li>
-          <li class="page-item"><a class="page-link" href="#">1</a></li>
-          <li class="page-item"><a class="page-link" href="#">2</a></li>
-          <li class="page-item"><a class="page-link" href="#">3</a></li>
-          <li class="page-item">
-            <a class="page-link" href="#" aria-label="Next">
-              <span aria-hidden="true">&raquo;</span>
-            </a>
-          </li>
-        </ul>
-      </nav>
-    </div>
-
-
-
+     <!-- Pagination -->
+     <nav aria-label="Page navigation example">
+      <ul class="pagination">
+        <li class="page-item" id="previousBtn">
+          <a class="page-link" href="#" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+          </a>
+        </li>
+        <li class="page-item"><a class="page-link" href="#">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">2</a></li>
+        <li class="page-item"><a class="page-link" href="#">3</a></li>
+        <li class="page-item"><a class="page-link" href="#">4</a></li>
+        <li class="page-item"><a class="page-link" href="#">5</a></li>
+        <li class="page-item"><a class="page-link" href="#">6</a></li>
+        <li class="page-item"><a class="page-link" href="#">7</a></li>
+        <li class="page-item"><a class="page-link" href="#">8</a></li>
+        <li class="page-item"><a class="page-link" href="#">9</a></li>
+        <li class="page-item"><a class="page-link" href="#">10</a></li>
+     
+        <li class="page-item" id="nextBtn">
+          <a class="page-link" href="#" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
   </div>
+
+
+  
 
 
   <!-- modal  -->

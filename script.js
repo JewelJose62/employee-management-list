@@ -45,63 +45,149 @@ function resetValidation() {
 }
 
 
+
+
+
+let employees = [];  // Variable to store the fetched employee data
+let currentPage = 1; // Default to first page
+let numberOfRows = 10; // Default number of rows per page
+let filteredEmployees=[];// to store filtered employees
+
+
+
+// search function
+// pagination 
 // get employees from databae and list it on the table
 async function fetchEmployees() {
   try {
-    const response = await fetch(" http://localhost:3000/employees")
-
-    let tableBody = document.getElementById("tableBody")
-    let column = "";
-
-
+    const response = await fetch("http://localhost:3000/employees");
     if (!response.ok) {
-      throw new Error(`HTTP error ! status :${response.status}`);
-
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const employees = await response.json();
-    console.log(employees);
-    let count = 1;
-    employees.forEach((element) => {
+    employees = await response.json();
+    filteredEmployees=employees;
+    console.log("Fetched employees:", employees);
 
-      column +=
-
-        ` <tr>
-              <td scope="row">#0${count++}</td>
-              <td hidden id="userId">${element.id}</td>
-              <td>${element.salutation} ${element.firstName} ${element.lastName}</td>
-              <td>${element.email}</td>
-              <td>${element.phone}</td>
-              <td>${element.gender}</td>
-              <td>${element.dob}</td>
-              <td>${element.country}</td>
-                <td><div  class="dropdown"><button class="btn btn-light " type="button"
-        data-bs-toggle="dropdown" aria-expanded="false">
-       <i class="fa-solid fa-ellipsis text-primary">
-       </i>
-       </button>
-    <ul id="dotmenu" class="dropdown-menu  rounded-4">  
-       <li><button class="dropdown-item px-1" type="button" onclick="viewDetails(${element.id})"><i class="fa-regular px-2 fa-eye"></i>View Details </button></li>
-       <li><button id="edit" data-bs-toggle="modal" data-bs-target="#exampleModal" class="dropdown-item px-1" type="button" onclick="editemployee(${element.id})"><i class="fa-solid px-2 fa-pen"></i>Edit </button></li>
-       <li><button id="delete" class="dropdown-item px-1" type="button" onclick="deleteEmployee(${element.id})"><i class="fa-regular px-2 fa-trash-can"></i>Delete</button>
-       </li>
-   </ul>
-    </div></td>
-        </tr>`;
-
-
-    });
-
-    tableBody.innerHTML = column;
-  }
-
-  catch (error) {
-    console.log("Error fetching employee data :", error);
-
+    // Display the first page of employees
+    displayEmployees(employees, currentPage, numberOfRows);
+    setupPagination(filteredEmployees);
+  } catch (error) {
+    console.error("Error fetching employee data:", error);
   }
 }
 
-fetchEmployees();
+function displayEmployees(data, page, rows) {
+  const startIndex = (page - 1) * rows;
+  const endIndex = startIndex + rows;
+  const employeesToDisplay = data.slice(startIndex, endIndex);
 
+  let tableBody = document.getElementById("tableBody");
+  tableBody.innerHTML = ""; // Clear existing rows
+
+  employeesToDisplay.forEach((employee, index) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td scope="row">#${startIndex + index + 1}</td>
+      <td hidden id="userId">${employee.id}</td>
+      <td>${employee.salutation} ${employee.firstName} ${employee.lastName}</td>
+      <td>${employee.email}</td>
+      <td>${employee.phone}</td>
+      <td>${employee.gender}</td>
+      <td>${employee.dob}</td>
+      <td>${employee.country}</td>
+      <td>
+        <div class="dropdown">
+          <button class="btn btn-light" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fa-solid fa-ellipsis text-primary"></i>
+          </button>
+          <ul class="dropdown-menu rounded-4">
+            <li><button class="dropdown-item" type="button" onclick="viewDetails(${employee.id})"><i class="fa-regular px-2 fa-eye"></i> View Details</button></li>
+            <li><button class="dropdown-item" type="button" onclick="editEmployee(${employee.id})"><i class="fa-solid px-2 fa-pen"></i> Edit</button></li>
+            <li><button class="dropdown-item" type="button" onclick="deleteEmployee(${employee.id})"><i class="fa-regular px-2 fa-trash-can"></i> Delete</button></li>
+          </ul>
+        </div>
+      </td>
+    `;
+    tableBody.appendChild(row);
+  });
+}
+
+
+
+
+// function setupPagination(data) {
+//   const totalPages = Math.ceil(data.length / numberOfRows);
+//   const pagination = document.getElementById("pagination");
+//   pagination.innerHTML = ""; // Clear previous pagination
+
+
+
+//    // Previous Button
+//    const prevButton = document.createElement("li");
+//    prevButton.classList.add(".page-item");
+//    prevButton.innerHTML = `
+//      <a class="page-link" href="#" aria-label="Previous">
+//        <span aria-hidden="true">&laquo;</span>
+//      </a>
+//    `;
+//    prevButton.addEventListener("click", () => {
+//      if (currentPage > 1) {
+//        currentPage--;
+//        displayEmployees(data, currentPage, numberOfRows);
+//      }
+//    });
+//    pagination.appendChild(prevButton);
+
+
+
+//   for (let i = 1; i <= totalPages; i++) {
+//     const pageBtn = document.createElement("button");
+//     pageBtn.innerHTML = i;
+//     pageBtn.classList.add("page-btn");
+//     pageBtn.addEventListener("click", () => {
+//       currentPage = i;
+//       displayEmployees(data, currentPage, numberOfRows);
+//     });
+//     pagination.appendChild(pageBtn);
+//   }
+// }
+
+
+
+//   // Next Button
+//   const nextButton = document.createElement("li");
+//   nextButton.classList.add(".page-item");
+//   nextButton.innerHTML = `
+//     <a class="page-link" href="#" aria-label="Next">
+//       <span aria-hidden="true">&raquo;</span>
+//     </a>
+//   `;
+//   nextButton.addEventListener("click", () => {
+//     if (currentPage < totalPages) {
+//       currentPage++;
+//       displayEmployees(data, currentPage, numberOfRows);
+//     }
+//   });
+
+
+  // handle search input
+const searchInput = document.getElementById("search");
+searchInput.addEventListener("keyup", () => {
+  const query = searchInput.value.toLowerCase();
+  const filteredEmployees = employees.filter(employee =>
+    employee.firstName.toLowerCase().includes(query) ||
+    employee.lastName.toLowerCase().includes(query) ||
+    employee.email.toLowerCase().includes(query) ||
+    employee.phone.includes(query)
+  );
+
+  currentPage = 1; // Reset to first page after search
+  displayEmployees(filteredEmployees, currentPage, numberOfRows);
+  setupPagination(filteredEmployees);
+});
+
+// Initialize the fetch and display
+fetchEmployees();
 
 
 
@@ -130,6 +216,14 @@ const cityInp = document.getElementById("city")
 const pinInp = document.getElementById("pin")
 const usernameInp = document.getElementById("username")
 const passwordInp = document.getElementById("password")
+const entries = document.querySelector(".showEntries")
+const tabSize = document.getElementById("table_size")
+const userInfo = document.querySelector(".userInfo")
+const table = document.querySelector("table")
+const filterData = document.getElementById("search")
+const pageLinks = document.querySelectorAll('.page-link');
+const previousBtn = document.getElementById('previousBtn');
+const nextBtn = document.getElementById('nextBtn');
 
 
 
@@ -500,263 +594,142 @@ function submitForm(formData) {
        // delete employee >>>>>>
 
 
-
-document.querySelector("#tableBody").addEventListener('click', function(event) {
-  if (event.target.id === "delete") {
-    const row = event.target.closest("tr");
-    const userId = row.querySelector("#userId").textContent; // Use correct identifier
-
-
-    fetch(`http://localhost:3000/employees/${userId}`, {
-      method: "DELETE",
-    })
-    .then(response => {
-      if (response.ok) {
-        row.remove(); // Remove row from table after successful deletion
-      } else {
-        alert("Error deleting employee");
-      }
-    })
-    .catch(error => {
-      console.error("Error deleting employee:", error);
-      alert("Error occurred while deleting.");
-    });
-  }
-
-
-  // edit employee >>>>
-
-  
-   // Handle Edit
-   if (event.target && event.target.classList.contains("#edit")) {
-    const row = event.target.closest("tr");
-    const userId = row.querySelector("#useId").textContent; // Get the userId from data attribute
-    const name = row.querySelector(".name").textContent; // Assuming the employee name is in a cell with class="name"
-    const email = row.querySelector(".email").textContent; // Assuming email is in a cell with class="email"
-
-    // Populate the edit form (replace these with your actual form fields)
-    document.querySelector("#editForm #userId").value = userId;
-    document.querySelector("#editForm #name").value = name;
-    document.querySelector("#editForm #email").value = email;
-
-    // Show the form
-    document.querySelector("#editForm").style.display = "block";
-  }
-});
-
-
-
-
-
-
-
-// Handle form submission for editing employee
-document.querySelector("#edit").addEventListener('submit', function(event) {
-  event.preventDefault();
-
-  const userId = document.querySelector("#edit #userId").value;
-  const name = document.querySelector("#edit #name").value;
-  const email = document.querySelector("#edit #email").value;
-
-  fetch(`http://localhost:3000/employees/${userId}`, {
-    method: "PUT", // Use PUT or PATCH depending on your backend
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      name: name,
-      email: email,
-    }),
-  })
-  .then(response => response.json())
-  .then(updatedEmployee => {
-    if (updatedEmployee) {
-      // Update the row in the table with the new values
-      const row = document.querySelector(`tr[data-user-id="${userId}"]`);
-      row.querySelector(".name").textContent = updatedEmployee.name;
-      row.querySelector(".email").textContent = updatedEmployee.email;
+       document.querySelector("#tableBody").addEventListener('click', function(event) {
+        // Check if the clicked element is the delete button
+        if (event.target && event.target.matches('button.dropdown-item') && event.target.textContent.includes("Delete")) {
+          const row = event.target.closest("tr"); // Find the closest row
+          const userId = row.querySelector("#userId").textContent; // Get the employee ID
       
-      // Hide the edit form
-      document.querySelector("#editForm").style.display = "none";
-    } else {
-      alert("Error updating employee");
-    }
-  })
-  .catch(error => {
-    console.error("Error updating employee:", error);
-    alert("Error occurred while updating.");
-  });
-});
-
-
-document.querySelector("#tableBody").addEventListener('click', function(event) {
-  if (event.target.id === "edit") {
-    const row = event.target.closest("tr");
-    const userId = row.querySelector("#userId").textContent; // Use correct identifier
-   console.log("hello");
-   
-
-function editEmployee(userId) {
-  const form = document.getElementById('add_employee'); 
-  // Ensure form is properly selected
-  
-  
-  const saveChangeBtn = document.getElementById("savechange"); // Make sure saveChangeBtn exists
-  const submitBtn = document.getElementById("submitBtn"); // Ensure submitBtn is defined
-  // document.getElementById("form_head").innerHTML = "Edit Employee";
-  const modal = document.getElementById("modal"); 
-  saveChangeBtn.style.display = "block";
-  submitBtn.style.display = "none"; // Hide the submit button
-  modal.style.display = "block";
-  modal.setAttribute("aria-hidden", "false");
-
-  async function editData() {
-    try {
-      const response = await fetch(`http://localhost:3000/employees/${userId}`);
-      const employee = await response.json();
-
-      // Populate form fields with the employee data
-      Object.entries(employee).forEach(([key, value]) => {
-        const inputField = document.querySelector(`#add_employee [name="${key}"]`);
-        if (inputField) {
-          if (key === "dob") {
-            const formattedDob = value.split("-").reverse().join("-");
-            inputField.value = formattedDob;
-          } else if (key === "gender") {
-            document.querySelector(`input[name="gender"][value="${value}"]`).checked = true;
-          } else {
-            inputField.value = value;
-          }
+          // Call the function to delete the employee
+          fetch(`http://localhost:3000/employees/${userId}`, {
+            method: "DELETE",
+          })
+          .then(response => {
+            if (response.ok) {
+              row.remove(); // Remove the row from the table
+              confirm("Are you sure to delete the employee.");
+            } else {
+              alert("Error deleting employee.");
+            }
+          })
+          .catch(error => {
+            console.error("Error deleting employee:", error);
+            alert("Error occurred while deleting.");
+          });
         }
       });
-    } catch (error) {
-      console.error('Error fetching employee data:', error);
-    }
-  }
-  editData();
-}
-
   
-  editEmployee();
 
-  saveChangeBtn.addEventListener("click", function () {
-    const isValid = validation();  // Assuming validation returns a boolean
-    if (!isValid) return;  // Prevent further action if the form is invalid
 
-    const updatedData = new FormData(form);
-    const updatedEmployee = {};
-    updatedData.forEach((value, key) => {
-      updatedEmployee[key] = value;
-    });
 
-    // Send the updated data to the server
-    async function updateEmployee() {
-      try {
-        const response = await fetch(`http://localhost:3000/employees/${userId}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(updatedEmployee),
-        });
 
-        if (response.ok) {
-          alert("Employee updated successfully!");
-          modal.style.display = "none";
-          modal.setAttribute("aria-hidden", "true");
-          fetchEmployees();  // Re-fetch employee list to reflect updates
-        } else {
-          alert("Failed to update employee. Please try again later.");
-        }
-      } catch (error) {
-        console.error('Error updating employee:', error);
-        alert("An error occurred. Please try again later.");
-      }
-    }
 
-    updateEmployee();
+
+
+// pagination
+
+ // Function to update the active page
+ function updateActivePage() {
+  pageLinks.forEach(link => {
+    link.classList.remove('active');
   });
+  const currentPageLink = document.querySelector(`.page-item:nth-child(${currentPage + 1}) .page-link`);
+  currentPageLink.classList.add('active');
 }
+
+// Event listener for page number clicks
+pageLinks.forEach(link => {
+  link.addEventListener('click', function(event) {
+    event.preventDefault();
+    if (event.target.textContent !== 'Previous' && event.target.textContent !== 'Next') {
+      currentPage = parseInt(event.target.textContent);
+      updateActivePage();
+    }
+  });
 });
 
-  
+// Event listener for previous button
+previousBtn.addEventListener('click', function(event) {
+  event.preventDefault();
+  if (currentPage > 1) {
+    currentPage--;
+    updateActivePage();
+  }
+});
+
+// Event listener for next button
+nextBtn.addEventListener('click', function(event) {
+  event.preventDefault();
+  if (currentPage < 10) { // Assuming there are 10 pages, adjust as necessary
+    currentPage++;
+    updateActivePage();
+  }
+});
+
+// Initialize the active page
+updateActivePage();
 
 
 
 
-// // document.addEventListener("DOMContentLoaded", function() {
-//   // Get pagination elements
-//   const pagination = document.querySelector('.pagination');
-//   const pageItems = pagination.querySelectorAll('.page-item');
-//   const prevButton = pagination.querySelector('li.page-item:first-child');
-//   const nextButton = pagination.querySelector('li.page-item:last-child');
-//   const pageLinks = pagination.querySelectorAll('.page-link');
-  
-//   let currentPage = 1;
-//   const totalPages = pageItems.length - 2; // Adjust to exclude Prev and Next
-  
-//   // Set up event listeners for page clicks
-//   pageLinks.forEach((link, index) => {
-//     if (index === 0 || index === pageLinks.length - 1) return; // Skip Prev and Next
-//     link.addEventListener('click', function(e) {
-//       e.preventDefault(); // Prevent default anchor behavior
-//       const pageNumber = parseInt(link.textContent);
-//       if (pageNumber !== currentPage) {
-//         currentPage = pageNumber;
-//         updatePagination();
-//       }
-//     });
-//   });
-  
-//   // Handle Previous button click
-//   prevButton.querySelector('.page-link').addEventListener('click', function(e) {
-//     e.preventDefault();
-//     if (currentPage > 1) {
-//       currentPage--;
-//       updatePagination();
-//     }
-//   });
-  
-//   // Handle Next button click
-//   nextButton.querySelector('.page-link').addEventListener('click', function(e) {
-//     e.preventDefault();
-//     if (currentPage < totalPages) {
-//       currentPage++;
-//       updatePagination();
-//     }
-//   });
-  
-//   // Function to update pagination (active page, disable Prev/Next)
-//   function updatePagination() {
-//     const pageItems = pagination.querySelectorAll('.page-item');  // Re-query in case it changes dynamically
+// Edit Employee
+async function editEmployee(userId) {
+  try {
+    // Fetch employee data from the backend
+    const response = await fetch(`http://localhost:3000/employees/${userId}`);
+    const employee = await response.json();
+
+    // Open the modal
+    modal.style.display = 'block';
+    modal.setAttribute("aria-hidden", "false");
+    resetValidation();
+
     
-//     // Update active page
-//     pageItems.forEach((item, index) => {
-//       const pageLink = item.querySelector('.page-link');
-//       const pageNumber = parseInt(pageLink.textContent);
-  
-//       if (pageNumber === currentPage) {
-//         item.classList.add('active');
-//       } else {
-//         item.classList.remove('active');
-//       }
-//     });
-  
-//     // Disable Previous button if on first page
-//     if (currentPage === 1) {
-//       prevButton.classList.add('disabled');
-//     } else {
-//       prevButton.classList.remove('disabled');
-//     }
-  
-//     // Disable Next button if on the last page
-//     if (currentPage === totalPages) {
-//       nextButton.classList.add('disabled');
-//     } else {
-//       nextButton.classList.remove('disabled');
-//     }
-//   }
-  
-//   // Initialize the pagination
-//   updatePagination();
-  
+    document.getElementById("salutation").value = employee.salutation;
+    document.getElementById("firstName").value = employee.firstName;
+    document.getElementById("lastName").value = employee.lastName;
+    document.getElementById("email").value = employee.email;
+    document.getElementById("phone").value = employee.phone;
+    document.getElementById("dob").value = employee.dob.split("-").reverse().join("-"); // Change format if necessary
+    document.querySelector(`[name="gender"][value="${employee.gender}"]`).checked = true;
+    document.getElementById("qualification").value = employee.qualifications;
+    document.getElementById("address").value = employee.address;
+    document.getElementById("state").value = employee.state;
+    document.getElementById("country").value = employee.country;
+    document.getElementById("city").value = employee.city;
+    document.getElementById("pin").value = employee.pin;
+    document.getElementById("username").value = employee.username;
+    document.getElementById("password").value = employee.password;
+
+    // Set hidden employee ID for submitting the update
+    document.getElementById("employeeId").value = employee.id;
+
+  } catch (error) {
+    console.error("Error fetching employee data:", error);
+  }
+}
+
+
+// Function to submit the updated data
+async function submitForm(formData) {
+  const userId = document.getElementById("employeeId").value;
+
+  try {
+    const response = await fetch(`http://localhost:3000/employees/${userId}`, {
+      method: 'PUT',
+      body: formData, // Send the updated form data
+    });
+
+    if (response.ok) {
+      alert("Employee updated successfully!");
+      modal.style.display = 'none'; // Close modal after update
+      resetValidation();
+      fetchEmployees(); // Refresh employee list
+    } else {
+      alert("There was an error updating the employee.");
+    }
+  } catch (error) {
+    console.error('Error submitting updated form:', error);
+    alert("Network error. Please try again.");
+  }
+}
